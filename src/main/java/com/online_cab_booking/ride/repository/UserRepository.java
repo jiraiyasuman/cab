@@ -6,8 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.online_cab_booking.ride.entity.Login;
 
-public interface LoginRepository extends JpaRepository<Login , Integer >{
+public interface UserRepository extends JpaRepository<Login, Integer>{
+	Login findByName(String name);
+    Login findByEmail(String email);
 	
-	Optional<Login> findByEmail(String email);
-
 }

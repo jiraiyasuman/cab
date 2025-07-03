@@ -4,13 +4,13 @@ import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.authentication.UserServiceBeanDefinitionParser;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.online_cab_booking.ride.serviceimpl.LoginService;
+import com.online_cab_booking.ride.serviceimpl.JwtService;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -18,36 +18,40 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Component
-public class JwtFilter extends OncePerRequestFilter{
+public class JwtFilter extends OncePerRequestFilter {
 
-	
-	private JwtUtil jwtUtil;
-	private LoginService loginService;
-	
 	@Autowired
-	public JwtFilter(JwtUtil jwtUtil, LoginService loginService) {
-		super();
-		this.jwtUtil = jwtUtil;
-		this.loginService = loginService;
+	private JwtService jwtService;
+
+	@Autowired
+	private MyUserDetailsService detailsService;
+
+	@Override
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+			throws ServletException, IOException {
+
+		// authorization = Bearer sdjhbkjhbsdfvjk.sdfsdfsafsadf.sadfsdfsadfaf
+		String authHeader = request.getHeader("Authorization");
+
+		String token = null;
+		String username = null;
+
+		if (authHeader != null && authHeader.startsWith("Bearer ")) {
+			token = authHeader.substring(7);
+			username = jwtService.extractUserName(token);
+		}
+
+		if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+			UserDetails userDetails = detailsService.loadUserByUsername(username);
+			Boolean validateToken = jwtService.validateToken(token, userDetails);
+			if (validateToken) {
+				UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,
+						null, userDetails.getAuthorities());
+				authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+				SecurityContextHolder.getContext().setAuthentication(authToken);
+			}
+
+		}
+		filterChain.doFilter(request, response);
 	}
-
-	protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws ServletException, IOException {
-	    String auth = req.getHeader("Authorization");
-	    if (auth != null && auth.startsWith("Bearer ")) {
-	        String token = auth.substring(7);
-	        if (jwtUtil.validateToken(token)) {
-	            String email = jwtUtil.getUsername(token);
-
-	            // ✅ FIXED HERE
-	            UserDetails user = loginService.loadUserByUsername(email);
-
-	            UsernamePasswordAuthenticationToken authentication =
-	                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-
-	            SecurityContextHolder.getContext().setAuthentication(authentication);
-	        }
-	    }
-	    chain.doFilter(req, res);
-	  }
-	
 }

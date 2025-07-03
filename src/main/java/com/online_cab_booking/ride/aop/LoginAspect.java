@@ -1,5 +1,4 @@
-package com.online_cab_booking.ride.aspect;
-
+package com.online_cab_booking.ride.aop;
 import java.util.logging.Logger;
 
 import org.aspectj.lang.JoinPoint;
@@ -7,12 +6,12 @@ import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
-
+import org.aspectj.lang.annotation.Aspect;
 
 @Aspect
-public class RideAspect {
+public class LoginAspect {
 
-	private Logger LOGGER = Logger.getLogger(getClass().getName());
+private Logger LOGGER = Logger.getLogger(getClass().getName());
 	
 	@Pointcut("* execution(com.online_cab_booking.ride.controller.*.*(...))")
 	private void forControllerPackage() {
@@ -56,6 +55,5 @@ public class RideAspect {
 			
 		}
 		
-		
-	}
-
+	
+}
