@@ -10,6 +10,7 @@ import com.online_cab_booking.ride.mapper.LoginRegisterAutoMapper;
 import com.online_cab_booking.ride.service.UserService;
 
 @RestController
+@RequestMapping("api/v1")
 public class HomeController {
 
     @Autowired
@@ -17,7 +18,7 @@ public class HomeController {
 
     LoginRegisterAutoMapper loginRegisterAutoMapper = new LoginRegisterAutoMapper();
 
-    @PostMapping("/register")
+    @PostMapping("auth/register")
     public ResponseEntity<?> register(@RequestBody LoginRegisterDto user) {
         Login loginRegisterDto = loginRegisterAutoMapper.mapToLogin(user);
         userService.register(loginRegisterDto);
@@ -29,7 +30,7 @@ public class HomeController {
         return ResponseEntity.ok(userService.verifyOtp(email, otp));
     }
 
-    @PostMapping("/login")
+    @PostMapping("auth/login")
     public ResponseEntity<?> login(@RequestParam String username, @RequestParam String password) {
         String token = userService.authenticate(username, password);
         if (token.equals("Invalid credentials.") || token.contains("locked") || token.contains("OTP")) {
